@@ -42,12 +42,21 @@ public class SecurityConfig {
                             "/h2-console/**"
                         )
                         .permitAll()
+
+                        .requestMatchers(
+                            "/professores/me/**"
+                        )
+                        .hasRole(
+                            "PROFESSOR"
+                        )
+
                         .requestMatchers(
                             "/unidades-curriculares/**"
                         )
                         .hasRole(
                             "ALUNO"
                         )
+
                         .anyRequest()
                         .denyAll()
             )
