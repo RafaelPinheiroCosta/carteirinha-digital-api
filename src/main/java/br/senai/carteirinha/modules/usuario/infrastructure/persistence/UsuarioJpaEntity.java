@@ -137,6 +137,15 @@ public class UsuarioJpaEntity {
         return ativo;
     }
 
+    public void aprovar(PerfilAcesso perfil, String curso, String turma, String matricula) {
+        if (ativo) throw new IllegalStateException("Usuário já ativo");
+        this.perfil = perfil;
+        this.curso = curso;
+        this.turma = turma;
+        this.matricula = matricula;
+        this.ativo = true;
+    }
+
     public void definirPerfil(
         PerfilAcesso perfil
     ) {

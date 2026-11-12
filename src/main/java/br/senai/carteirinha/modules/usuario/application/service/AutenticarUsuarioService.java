@@ -61,11 +61,14 @@ public final class AutenticarUsuarioService
                 usuario.senhaHash()
             );
 
-        if (
-            !usuario.estaAtivo()
-                || !senhaCorreta
-        ) {
+        if (!senhaCorreta) {
             throw new CredenciaisInvalidasException();
+        }
+
+        if (!usuario.estaAtivo()) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.FORBIDDEN, "Cadastro aguardando aprovação"
+            );
         }
 
         return new LoginResponseDto(

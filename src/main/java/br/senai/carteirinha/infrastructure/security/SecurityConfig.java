@@ -36,12 +36,16 @@ public class SecurityConfig {
                     auth
                         .requestMatchers(
                             "/auth/login",
+                            "/public/cursos",
+                            "/public/cadastros",
                             "/swagger-ui/**",
                             "/swagger-ui.html",
                             "/v3/api-docs/**",
                             "/h2-console/**"
                         )
                         .permitAll()
+
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
 
                         .requestMatchers(
                             "/professores/me/**"

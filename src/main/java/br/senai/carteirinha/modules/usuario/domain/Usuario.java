@@ -75,11 +75,7 @@ public final class Usuario {
                     "curso"
                 );
 
-            this.turma =
-                exigirTexto(
-                    turma,
-                    "turma"
-                );
+            this.turma = ativo ? exigirTexto(turma, "turma") : textoOpcional(turma);
 
         } else {
 
