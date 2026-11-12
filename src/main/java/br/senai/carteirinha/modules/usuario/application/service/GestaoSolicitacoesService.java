@@ -77,7 +77,7 @@ public class GestaoSolicitacoesService {
         }
         UUID id = UUID.randomUUID();
         usuarios.save(new UsuarioJpaEntity(id, login, senhas.encode(senha), nome,
-            "PEND-" + id.toString(), perfil, curso, "", false));
+            "PEND-" + id.toString().replace("-", "").substring(0, 20), perfil, curso, "", false));
     }
 
     @Transactional(readOnly = true)
@@ -151,7 +151,7 @@ public class GestaoSolicitacoesService {
                     a.turma(), uc.getNome(), uc.getCargaHoraria(), uc.getQuantidadeAulas(), 0,
                     uc.getDiasSemana(), uc.getHorarioInicio(), uc.getHorarioFim()));
             }
-            u.aprovar(perfil, "", "", "PROF-" + id.toString());
+            u.aprovar(perfil, "", "", "PROF-" + id.toString().replace("-", "").substring(0, 20));
         }
         usuarios.save(u);
     }

@@ -18,10 +18,13 @@ public class AdminBootstrapConfig {
             if (login.isBlank() && password.isBlank()) return;
             if (login.isBlank() || password.length() < 12)
                 throw new IllegalStateException("Configure login e senha do administrador (mínimo 12 caracteres)");
-            if (repository.findByLoginIgnoreCase(login).isEmpty()) {
+            var existente = repository.findByLoginIgnoreCase(login);
+            if (existente.isPresent() && existente.get().getPerfil() != PerfilAcesso.ADMIN)
+                throw new IllegalStateException("Login do administrador já pertence a outro perfil");
+            if (existente.isEmpty()) {
                 UUID id = UUID.randomUUID();
                 repository.save(new UsuarioJpaEntity(id, login, encoder.encode(password),
-                    "Administrador", "ADMIN-" + id, PerfilAcesso.ADMIN, "", "", true));
+                    "Administrador", "ADMIN-" + id.toString().replace("-", "").substring(0, 20), PerfilAcesso.ADMIN, "", "", true));
             }
         };
     }
