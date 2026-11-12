@@ -40,15 +40,10 @@ class GestaoSolicitacoesIntegrationTest {
             .andExpect(jsonPath("$", hasItem("Desenvolvimento de Sistemas")));
 
         mvc.perform(post("/public/cadastros").contentType(MediaType.APPLICATION_JSON)
-                .content(json.writeValueAsString(new Object() {
-                    public final String nome = "Aluno Teste";
-                    public final String senha = "SenhaForte123";
-                    public final String perfil = "ALUNO";
-                    public final String curso = "Desenvolvimento de Sistemas";
-                    public final String usuario = login;
-                    public final String loginSolicitado = login;
-                    public String getLogin() { return login; }
-                })))
+                .content(json.writeValueAsString(java.util.Map.of(
+                    "nome", "Aluno Teste", "senha", "SenhaForte123", "perfil", "ALUNO",
+                    "curso", "Desenvolvimento de Sistemas", "login", login
+                ))))
             .andExpect(status().isAccepted());
 
         mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
