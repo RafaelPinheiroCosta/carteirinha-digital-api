@@ -8,11 +8,13 @@ Branch: `feat/solicitacoes-acesso-cursos-admin-20261112`. Não fazer merge sem v
 3. Login de usuário não aprovado responde 403, sem gerar JWT.
 4. Administrador entra pela rota normal `POST /auth/login` usando a conta didática definida em `src/main/resources/application.yml` (ou valores sobrescritos por variáveis de ambiente).
 5. `GET /admin/solicitacoes?perfil=ALUNO` ou `PROFESSOR` lista solicitações; `GET /admin/catalogo/turmas` oferece opções.
-6. `PUT /admin/solicitacoes/{id}/aprovacao` escolhe o perfil definitivo e associa registros:
-   - ALUNO: `{"perfil":"ALUNO","curso":"Desenvolvimento de Sistemas","turma":"2DEVEST-A","matricula":"MATRICULA_REAL"}`
-   - PROFESSOR: `{"perfil":"PROFESSOR","atribuicoes":[{"turma":"2DEVEST-A","unidadeCurricular":"Programação Back-End"},{"turma":"2DEVEST-B","unidadeCurricular":"Programação para Dispositivos Móveis"}]}`
+6. `PUT /admin/solicitacoes/{id}/aprovacao` confirma o perfil solicitado e associa registros:
+   - ALUNO: `{"turma":"2DEVEST-A","matricula":"MATRICULA_REAL"}`
+   - PROFESSOR: `{"atribuicoes":[{"turma":"2DEVEST-A","unidadeCurricular":"Programação Back-End"},{"turma":"2DEVEST-B","unidadeCurricular":"Programação para Dispositivos Móveis"}]}`
 7. `DELETE /admin/solicitacoes/{id}` exclui definitivamente solicitação rejeitada.
 8. Usuário aprovado entra normalmente; professor recebe turmas e UCs associadas.
+
+O perfil e o curso solicitado são imutáveis durante a aprovação; a API usa os dados persistidos da solicitação e ignora eventuais campos extras enviados pelo cliente.
 
 Todas as rotas `/admin/**` exigem JWT com `ROLE_ADMIN`. `ADMIN` nunca é aceito no cadastro público.
 

@@ -105,9 +105,9 @@ public class GestaoSolicitacoesService {
     @Transactional
     public void aprovar(UUID id, AprovarCadastroDto dto) {
         UsuarioJpaEntity u = pendente(id);
-        PerfilAcesso perfil = perfilPublico(dto.perfil());
+        PerfilAcesso perfil = u.getPerfil();
         if (perfil == PerfilAcesso.ALUNO) {
-            String curso = obrigatorio(dto.curso(), "curso");
+            String curso = obrigatorio(u.getCurso(), "curso solicitado");
             String codigo = obrigatorio(dto.turma(), "turma");
             String matricula = obrigatorio(dto.matricula(), "matricula");
             if (usuarios.findAll().stream().anyMatch(outro -> !outro.getId().equals(id) && matricula.equalsIgnoreCase(outro.getMatricula()))) {

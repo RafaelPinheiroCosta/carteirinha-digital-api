@@ -63,7 +63,6 @@ class GestaoSolicitacoesIntegrationTest {
                 .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json.writeValueAsString(java.util.Map.of(
-                    "perfil", "ALUNO", "curso", "Desenvolvimento de Sistemas",
                     "turma", "2DEVEST-A", "matricula", "T" + UUID.randomUUID().toString().substring(0, 12)
                 ))))
             .andExpect(status().isNoContent());
@@ -93,8 +92,7 @@ class GestaoSolicitacoesIntegrationTest {
         mvc.perform(put("/admin/solicitacoes/{id}/aprovacao", id)
                 .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(json.writeValueAsString(java.util.Map.of("perfil", "PROFESSOR",
-                    "atribuicoes", java.util.List.of(
+                .content(json.writeValueAsString(java.util.Map.of("atribuicoes", java.util.List.of(
                         java.util.Map.of("turma", "2DEVEST-A", "unidadeCurricular", "Programação Back-End"),
                         java.util.Map.of("turma", "2DEVEST-B", "unidadeCurricular", "Programação para Dispositivos Móveis")
                     )))))
@@ -125,6 +123,38 @@ class GestaoSolicitacoesIntegrationTest {
         mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
                 .content(json.writeValueAsString(java.util.Map.of("login", rejeitado, "senha", "SenhaForte123"))))
             .andExpect(status().isUnauthorized());
+    }
+
+
+    @Test
+    void administradorNaoPodeAlterarPerfilOuCursoDoCadastro() throws Exception {
+        String login = "perfil-fixo-" + UUID.randomUUID();
+        mvc.perform(post("/public/cadastros").contentType(MediaType.APPLICATION_JSON)
+            .content(json.writeValueAsString(java.util.Map.of(
+                "nome", "Aluno Perfil Fixo", "login", login,
+                "senha", "SenhaForte123", "perfil", "ALUNO",
+                "curso", "Desenvolvimento de Sistemas"
+            )))).andExpect(status().isAccepted());
+        String token = tokenAdmin();
+        String lista = mvc.perform(get("/admin/solicitacoes").param("perfil", "ALUNO")
+            .header("Authorization", "Bearer " + token)).andReturn().getResponse().getContentAsString();
+        String id = null;
+        for (JsonNode item : json.readTree(lista))
+            if (login.equals(item.get("login").asText())) id = item.get("id").asText();
+        org.junit.jupiter.api.Assertions.assertNotNull(id);
+        // Mesmo que o cliente envie parâmetros extras, o servidor ignora perfil/curso.
+        mvc.perform(put("/admin/solicitacoes/{id}/aprovacao", id)
+            .header("Authorization", "Bearer " + token)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(json.writeValueAsString(java.util.Map.of(
+                "perfil", "PROFESSOR", "curso", "Curso adulterado",
+                "turma", "2DEVEST-A", "matricula", "M" + UUID.randomUUID().toString().substring(0, 12)
+            )))).andExpect(status().isNoContent());
+        mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
+            .content(json.writeValueAsString(java.util.Map.of("login", login, "senha", "SenhaForte123"))))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.perfil").value("ALUNO"))
+            .andExpect(jsonPath("$.curso").value("Desenvolvimento de Sistemas"));
     }
 
     @Test
