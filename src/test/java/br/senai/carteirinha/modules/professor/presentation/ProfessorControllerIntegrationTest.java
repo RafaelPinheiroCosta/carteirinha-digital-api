@@ -92,7 +92,7 @@ class ProfessorControllerIntegrationTest {
             .andExpect(
                 jsonPath(
                     "$",
-                    hasSize(3)
+                    hasSize(4)
                 )
             )
             .andExpect(
@@ -159,7 +159,7 @@ class ProfessorControllerIntegrationTest {
             .andExpect(
                 jsonPath(
                     "$",
-                    hasSize(6)
+                    hasSize(10)
                 )
             )
             .andExpect(
