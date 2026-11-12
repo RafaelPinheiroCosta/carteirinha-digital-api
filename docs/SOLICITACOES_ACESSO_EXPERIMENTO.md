@@ -6,7 +6,7 @@ Branch: `feat/solicitacoes-acesso-cursos-admin-20261112`. Não fazer merge sem v
 1. Visitante consulta `GET /public/cursos` (lista de nomes dos cursos derivados das turmas cadastradas).
 2. Visitante envia `POST /public/cadastros`, com `nome`, `login`, `senha`, `perfil` (ALUNO ou PROFESSOR) e `curso` para aluno. Resposta 202: solicitação recebida.
 3. Login de usuário não aprovado responde 403, sem gerar JWT.
-4. Administrador entra pela rota normal `POST /auth/login` usando conta de bootstrap configurada no ambiente.
+4. Administrador entra pela rota normal `POST /auth/login` usando a conta didática definida em `src/main/resources/application.yml` (ou valores sobrescritos por variáveis de ambiente).
 5. `GET /admin/solicitacoes?perfil=ALUNO` ou `PROFESSOR` lista solicitações; `GET /admin/catalogo/turmas` oferece opções.
 6. `PUT /admin/solicitacoes/{id}/aprovacao` escolhe o perfil definitivo e associa registros:
    - ALUNO: `{"perfil":"ALUNO","curso":"Desenvolvimento de Sistemas","turma":"2DEVEST-A","matricula":"MATRICULA_REAL"}`
@@ -20,13 +20,17 @@ Todas as rotas `/admin/**` exigem JWT com `ROLE_ADMIN`. `ADMIN` nunca é aceito 
 
 ```powershell
 git switch feat/solicitacoes-acesso-cursos-admin-20261112
-$env:APP_BOOTSTRAP_ADMIN_LOGIN = "admin-local"
-$env:APP_BOOTSTRAP_ADMIN_PASSWORD = Read-Host "Senha administrativa (minimo 12 caracteres)"
+# Para desenvolvimento local, o application.yml ja define:
+# login: admin-local
+# senha: AdminLocal123!
+# Remova variaveis de ambiente antigas que possam sobrescrever o YAML:
+Remove-Item Env:APP_BOOTSTRAP_ADMIN_LOGIN -ErrorAction SilentlyContinue
+Remove-Item Env:APP_BOOTSTRAP_ADMIN_PASSWORD -ErrorAction SilentlyContinue
 mvn test
 mvn spring-boot:run
 ```
 
-Não publicar nem versionar a senha. Para teste local, usar um ambiente isolado; em produção, configurar secret manager e migrações.
+A senha no YAML é intencionalmente pública e **exclusivamente didática**. Não reutilize esta senha em serviços reais; em produção, substitua-a por segredo seguro armazenado fora do repositório e faça bootstrap seguro do administrador.
 
 ## Observações e limites conhecidos
 - O catálogo inicial é derivado das turmas/UCs de professor já existentes: ainda não há módulo de manutenção independente de cursos/turmas/UCs.
@@ -34,7 +38,7 @@ Não publicar nem versionar a senha. Para teste local, usar um ambiente isolado;
 - O número de matrícula institucional de aluno é fornecido pelo administrador. O sistema não inventa matrícula oficial.
 - Cadastro rejeitado é apagado definitivamente, conforme requisito didático.
 - A API usa H2 `create-drop` por padrão: os novos cadastros desaparecem ao reiniciar a API. Para persistência, configurar PostgreSQL e migrações adequadas.
-- O bootstrap não cria um administrador sem variáveis de ambiente explícitas.
+- O bootstrap cria um administrador `admin-local` com senha `AdminLocal123!` no ambiente local padrão, salvo se variáveis de ambiente sobrescreverem os valores. Se a conta já existir em banco persistente, o bootstrap não altera sua senha.
 - Recomendado reforçar validações, limitação de tentativas, auditoria administrativa e proteção de dados pessoais antes de qualquer uso real.
 
 ## Testes
