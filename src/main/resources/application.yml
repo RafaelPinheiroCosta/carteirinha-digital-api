@@ -27,6 +27,13 @@ server:
   port: ${SERVER_PORT:8080}
 
 app:
+  # Credenciais didáticas somente para desenvolvimento local.
+  # Não utilizar esta senha em ambientes públicos ou de produção.
+  # Variáveis de ambiente APP_BOOTSTRAP_ADMIN_LOGIN e
+  # APP_BOOTSTRAP_ADMIN_PASSWORD têm precedência quando definidas.
+  bootstrap:
+    admin-login: ${APP_BOOTSTRAP_ADMIN_LOGIN:admin-local}
+    admin-password: ${APP_BOOTSTRAP_ADMIN_PASSWORD:AdminLocal123!}
   jwt:
     issuer: carteirinha-digital-api
     # Chave didática. Em produção, defina JWT_SECRET no ambiente.
