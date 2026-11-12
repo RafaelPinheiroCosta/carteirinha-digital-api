@@ -1,6 +1,7 @@
 package br.senai.carteirinha.modules.usuario.application.service;
 
 import br.senai.carteirinha.modules.professor.infrastructure.persistence.*;
+import br.senai.carteirinha.modules.curso.infrastructure.persistence.*;
 import br.senai.carteirinha.modules.usuario.application.dto.*;
 import br.senai.carteirinha.modules.usuario.domain.PerfilAcesso;
 import br.senai.carteirinha.modules.usuario.infrastructure.persistence.*;
@@ -17,20 +18,26 @@ public class GestaoSolicitacoesService {
     private final SpringDataTurmaProfessorRepository turmas;
     private final SpringDataUnidadeCurricularProfessorRepository unidades;
     private final PasswordEncoder senhas;
+    private final SpringDataCursoRepository cursosRepository;
+    private final SpringDataUnidadeCurricularCursoRepository unidadesCurso;
 
     public GestaoSolicitacoesService(SpringDataUsuarioRepository usuarios,
         SpringDataTurmaProfessorRepository turmas,
         SpringDataUnidadeCurricularProfessorRepository unidades,
-        PasswordEncoder senhas) {
+        PasswordEncoder senhas,
+        SpringDataCursoRepository cursosRepository,
+        SpringDataUnidadeCurricularCursoRepository unidadesCurso) {
         this.usuarios = usuarios;
         this.turmas = turmas;
         this.unidades = unidades;
         this.senhas = senhas;
+        this.cursosRepository = cursosRepository;
+        this.unidadesCurso = unidadesCurso;
     }
 
     public List<String> cursos() {
-        return turmas.findAll().stream().map(TurmaProfessorJpaEntity::getCurso)
-            .filter(s -> s != null && !s.isBlank()).distinct().sorted().toList();
+        return cursosRepository.findAll().stream()
+            .map(CursoJpaEntity::getNome).distinct().sorted().toList();
     }
 
     public List<TurmaCatalogoDto> catalogo() {
@@ -39,8 +46,12 @@ public class GestaoSolicitacoesService {
                 turma -> turma, (primeira, outra) -> primeira)
         ).values().stream().sorted(Comparator.comparing(TurmaProfessorJpaEntity::getCodigo))
         .map(t -> new TurmaCatalogoDto(t.getCodigo(), t.getCurso(),
-            unidades.findAll().stream().filter(u -> u.getTurma().equals(t.getCodigo()))
-              .map(UnidadeCurricularProfessorJpaEntity::getNome).distinct().sorted().toList()))
+            cursosRepository.findAll().stream()
+              .filter(c -> c.getNome().equals(t.getCurso()))
+              .findFirst()
+              .map(c -> unidadesCurso.findByCursoCodigoOrderByNomeAsc(c.getCodigo()).stream()
+                .map(UnidadeCurricularCursoJpaEntity::getNome).toList())
+              .orElse(List.of())))
         .toList();
     }
 
@@ -130,8 +141,10 @@ public class GestaoSolicitacoesService {
                 TurmaProfessorJpaEntity modelo = turmas.findAll().stream()
                     .filter(t -> t.getCodigo().equals(codigo)).findFirst()
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Turma inexistente: " + codigo));
-                boolean ucValida = unidades.findAll().stream()
-                    .anyMatch(x -> x.getTurma().equals(codigo) && x.getNome().equals(uc));
+                boolean ucValida = cursosRepository.findAll().stream()
+                    .filter(c -> c.getNome().equals(modelo.getCurso()))
+                    .anyMatch(c -> unidadesCurso.findByCursoCodigoOrderByNomeAsc(c.getCodigo()).stream()
+                        .anyMatch(x -> x.getNome().equals(uc)));
                 if (!ucValida) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "UC não pertence à turma: " + uc);
                 modelos.put(codigo, modelo);
             }
@@ -146,10 +159,14 @@ public class GestaoSolicitacoesService {
             for (var a : atribuicoes) {
                 UnidadeCurricularProfessorJpaEntity uc = unidades.findAll().stream()
                     .filter(x -> x.getTurma().equals(a.turma()) && x.getNome().equals(a.unidadeCurricular()))
-                    .findFirst().orElseThrow();
+                    .findFirst().orElse(null);
+                TurmaProfessorJpaEntity turma = modelos.get(a.turma());
                 unidades.save(new UnidadeCurricularProfessorJpaEntity(UUID.randomUUID(), id, novasTurmas.get(a.turma()),
-                    a.turma(), uc.getNome(), uc.getCargaHoraria(), uc.getQuantidadeAulas(), 0,
-                    uc.getDiasSemana(), uc.getHorarioInicio(), uc.getHorarioFim()));
+                    a.turma(), a.unidadeCurricular(), uc == null ? 60 : uc.getCargaHoraria(),
+                    uc == null ? 80 : uc.getQuantidadeAulas(), 0,
+                    uc == null ? turma.getDiasSemana() : uc.getDiasSemana(),
+                    uc == null ? turma.getHorarioInicio() : uc.getHorarioInicio(),
+                    uc == null ? turma.getHorarioFim() : uc.getHorarioFim()));
             }
             u.aprovar(perfil, "", "", "PROF-" + id.toString().replace("-", "").substring(0, 20));
         }

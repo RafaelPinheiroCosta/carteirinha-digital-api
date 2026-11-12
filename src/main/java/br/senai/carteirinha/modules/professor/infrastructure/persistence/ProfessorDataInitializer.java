@@ -30,6 +30,9 @@ public class ProfessorDataInitializer {
             "30000000-0000-0000-0000-000000000003"
         );
 
+    private static final UUID TURMA_1REDES_A =
+        UUID.fromString("30000000-0000-0000-0000-000000000004");
+
     @Bean
     CommandLineRunner carregarDadosAcademicosProfessor(
         SpringDataTurmaProfessorRepository turmaRepository,
@@ -78,6 +81,22 @@ public class ProfessorDataInitializer {
                     "2026.2",
                     35,
                     "Sexta-feira",
+                    "19:00",
+                    "22:30"
+                )
+            );
+
+
+            garantirTurma(
+                turmaRepository,
+                new TurmaProfessorJpaEntity(
+                    TURMA_1REDES_A,
+                    PROFESSOR_ID,
+                    "1REDES-A",
+                    "Redes de Computadores",
+                    "2026.2",
+                    28,
+                    "Segunda-feira|Quarta-feira",
                     "19:00",
                     "22:30"
                 )
@@ -181,6 +200,43 @@ public class ProfessorDataInitializer {
                             "Sexta-feira",
                             "21:15",
                             "22:30"
+                        )
+                        ,
+                        new UnidadeCurricularProfessorJpaEntity(
+                            UUID.fromString("40000000-0000-0000-0000-000000000007"),
+                            PROFESSOR_ID,
+                            TURMA_1REDES_A,
+                            "1REDES-A",
+                            "Fundamentos de Redes",
+                            60, 80, 12,
+                            "Segunda-feira", "19:00", "20:30"
+                        ),
+                        new UnidadeCurricularProfessorJpaEntity(
+                            UUID.fromString("40000000-0000-0000-0000-000000000008"),
+                            PROFESSOR_ID,
+                            TURMA_1REDES_A,
+                            "1REDES-A",
+                            "Cabeamento Estruturado",
+                            60, 80, 10,
+                            "Segunda-feira", "20:30", "22:30"
+                        ),
+                        new UnidadeCurricularProfessorJpaEntity(
+                            UUID.fromString("40000000-0000-0000-0000-000000000009"),
+                            PROFESSOR_ID,
+                            TURMA_1REDES_A,
+                            "1REDES-A",
+                            "Administração de Redes",
+                            75, 100, 15,
+                            "Quarta-feira", "19:00", "20:30"
+                        ),
+                        new UnidadeCurricularProfessorJpaEntity(
+                            UUID.fromString("40000000-0000-0000-0000-000000000010"),
+                            PROFESSOR_ID,
+                            TURMA_1REDES_A,
+                            "1REDES-A",
+                            "Segurança de Redes",
+                            60, 80, 7,
+                            "Quarta-feira", "20:30", "22:30"
                         )
                     );
 
