@@ -42,7 +42,7 @@ class UnidadeCurricularControllerIntegrationTest {
     }
 
     @Test
-    void alunoDeveListarSomenteSuasUcs()
+    void alunoDeveListarTodasAsUcsDoCurso()
         throws Exception {
 
         String token =
@@ -67,7 +67,7 @@ class UnidadeCurricularControllerIntegrationTest {
             .andExpect(
                 jsonPath(
                     "$",
-                    hasSize(4)
+                    hasSize(7)
                 )
             )
             .andExpect(
